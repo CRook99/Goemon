@@ -29,6 +29,7 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         attacking = pas.attacking;
+        pas.dodging = dodging;
 
         horizontalInput = Input.GetAxisRaw("JoyHorizontal");
         verticalInput = Input.GetAxisRaw("JoyVertical");
@@ -90,9 +91,10 @@ public class PlayerController : MonoBehaviour
         canAttack = true;
     }
 
-    void Light_3_Thrust()
+    void Thrust(float thrustDistance)
     {
-        Debug.Log("Thrust");
-        rb.AddForce(0f, 0f, 250f);
+        Vector3 thrustVector = new Vector3();
+        thrustVector = transform.forward * thrustDistance;
+        rb.AddForce(thrustVector);
     }
 }

@@ -11,6 +11,7 @@ public class PlayerAnimState : MonoBehaviour
     private float verticalInput;
     [SerializeField] bool chainWindow;
     public bool attacking;
+    public bool dodging;
     public int stage;
 
     int light_1 = Animator.StringToHash("LightAttack_1");
@@ -35,12 +36,16 @@ public class PlayerAnimState : MonoBehaviour
 
     void Update()
     {
-        horizontalInput = Input.GetAxisRaw("JoyHorizontal");
-        verticalInput = Input.GetAxisRaw("JoyVertical");
-
+        if (!dodging)
+        {
+            horizontalInput = Input.GetAxisRaw("JoyHorizontal");
+            verticalInput = Input.GetAxisRaw("JoyVertical");
+        }
+        
         animator.SetFloat("VelMagnitude", velMagnitude);
         animator.SetFloat("HorizontalInput", horizontalInput);
         animator.SetFloat("VerticalInput", verticalInput);
+        animator.SetBool("Dodging", dodging);
 
         
     }
@@ -52,17 +57,33 @@ public class PlayerAnimState : MonoBehaviour
         chainWindow = false;
 
         animator.Play(lightAttacks[stage]);
-        if (stage < 2)
+
+        /*if (stage < 2)
         {
             stage++;
         }
         else
         {
             stage = 0;
-            controller.SendMessage("Light_3_Thrust");
+            controller.SendMessage("Thrust", 250f, SendMessageOptions.RequireReceiver);
+        }*/
+        
+        switch (stage)
+        {
+            case 0:
+                stage++;
+                yield return new WaitForSeconds(0.5f);
+                break;
+            case 1:
+                stage++;
+                yield return new WaitForSeconds(0.4f);
+                break;
+            case 2:
+                stage = 0;
+                controller.SendMessage("Thrust", 250f, SendMessageOptions.RequireReceiver);
+                yield return new WaitForSeconds(1.5f);
+                break;
         }
-            
-        yield return new WaitForSeconds(0.5f);
 
         StartCoroutine(OpenChainWindow(0.5f));
         attacking = !attacking;        
