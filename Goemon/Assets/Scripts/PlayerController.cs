@@ -17,14 +17,24 @@ public class PlayerController : MonoBehaviour
     private Vector3 direction;
     [SerializeField] bool moving;
     [SerializeField] bool dodging;
+    [SerializeField] bool attacking;
+    [SerializeField] bool canAttack;
+
+    private void Awake()
+    {
+        canAttack = true;
+        dodging = false;
+    }
 
     void Update()
     {
+        attacking = pas.attacking;
+
         horizontalInput = Input.GetAxisRaw("JoyHorizontal");
         verticalInput = Input.GetAxisRaw("JoyVertical");
         direction = new Vector3(horizontalInput, 0f, verticalInput);
 
-        if (!dodging)
+        if (!dodging && !attacking)
         {
             if (direction.magnitude >= 0.1f)
             {
@@ -37,24 +47,28 @@ public class PlayerController : MonoBehaviour
                 moving = false;
                 rb.velocity = Vector3.zero;
             }
+
+            if (Input.GetButtonDown("Dodge"))
+            {
+                StartCoroutine(Dodge(direction));
+            }
         }
         
 
         transform.LookAt(new Vector3(enemy.transform.position.x, transform.position.y, enemy.transform.position.z));
 
-        if (Input.GetButtonDown("Dodge"))
-        {
-            StartCoroutine(Dodge(direction));
-        }
+        
 
-        if (Input.GetButtonDown("Light Attack"))
+        if (Input.GetButtonDown("Light Attack") && !attacking)
         {
-            LightAttack();
+            canAttack = false;
+            rb.velocity = Vector3.zero;
+            pas.SendMessage("LightCombo");
         }
 
         if (Input.GetButtonDown("Heavy Attack"))
         {
-            HeavyAttack();
+            // do stuff
         }
 
         pas.velMagnitude = direction.magnitude;
@@ -71,15 +85,14 @@ public class PlayerController : MonoBehaviour
         dodging = false;
     }
 
-    void LightAttack()
+    void ComboEnded()
     {
-        Debug.Log("Light");
-        enemy.SendMessage("TakeDamageAndStun", new int[] { 10, 2 });
+        canAttack = true;
     }
 
-    void HeavyAttack()
+    void Light_3_Thrust()
     {
-        Debug.Log("Heavy");
-        enemy.SendMessage("TakeDamageAndStun", new int[] { 20, 20 });
+        Debug.Log("Thrust");
+        rb.AddForce(0f, 0f, 250f);
     }
 }
