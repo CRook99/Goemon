@@ -6,6 +6,7 @@ public class EnemyController : MonoBehaviour
 {
     [Header("References")]
     public EnemyHealthBar healthBar;
+    public GameObject player;
 
     [Header("Vitals")]
     [SerializeField] int health;
@@ -32,13 +33,24 @@ public class EnemyController : MonoBehaviour
             stunned = true;
             healthBar.SendMessage("BecomeStunned");
         }
+
+        transform.LookAt(new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z));
     }
 
-    void TakeDamageAndStun(int[] values)
+    void TakeDamageAndStun(AttackClass attack)
     {
-        health -= values[0];
-        stun += values[1];
+        health -= attack.damage;
+        stun += attack.stun;
+
+        StartCoroutine(Hitstop(attack.hitstop));
 
         healthBar.SendMessage("SetHealthAndStun", new int[] { health, stun });
+    }
+
+    IEnumerator Hitstop(float time)
+    {
+        Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(time);
+        Time.timeScale = 1f;
     }
 }

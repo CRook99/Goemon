@@ -4,17 +4,20 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("External Objects")]
+    [Header("References")]
     public Rigidbody rb;
     public GameObject enemy;
     public PlayerAnimState pas;
+    public Collider hurtbox;
 
-    // MOVEMENT
-    [SerializeField] float speed = 10f;
-    [SerializeField] float dodgeDistance = 150f;
+    [Header("Input")]
     private float horizontalInput;
     private float verticalInput;
     private Vector3 direction;
+
+    [Header("Movement")]
+    [SerializeField] float speed = 10f;
+    [SerializeField] float dodgeDistance = 150f;
     [SerializeField] bool moving;
     [SerializeField] bool dodging;
     [SerializeField] bool attacking;
@@ -67,9 +70,11 @@ public class PlayerController : MonoBehaviour
             pas.SendMessage("LightCombo");
         }
 
-        if (Input.GetButtonDown("Heavy Attack"))
+        if (Input.GetButtonDown("Heavy Attack") && !attacking)
         {
-            // do stuff
+            canAttack = false;
+            rb.velocity = Vector3.zero;
+            pas.SendMessage("HeavyCombo");
         }
 
         pas.velMagnitude = direction.magnitude;
@@ -91,7 +96,7 @@ public class PlayerController : MonoBehaviour
         canAttack = true;
     }
 
-    void Thrust(float thrustDistance)
+    void AddDriveForce(float thrustDistance)
     {
         Vector3 thrustVector = new Vector3();
         thrustVector = transform.forward * thrustDistance;

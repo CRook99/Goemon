@@ -21,6 +21,8 @@ public class EnemyHealthBar : MonoBehaviour
 
         healthSlider = healthUI.GetComponent<Slider>();
         stunSlider = stunUI.GetComponent<Slider>();
+
+        gameObject.GetComponent<CanvasGroup>().alpha = 0.9f;
     }
 
     void Update()
