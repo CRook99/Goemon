@@ -5,20 +5,19 @@ using UnityEngine;
 public class EnemyController : MonoBehaviour
 {
     [Header("References")]
-    public EnemyHealthBar healthBar;
+    public HealthBar healthBar;
     public GameObject player;
+    public Rigidbody rb;
 
     [Header("Vitals")]
     [SerializeField] int health;
     [SerializeField] int maxHealth = 100;
     [SerializeField] int stun;
     [SerializeField] int maxStun = 50;
-    [SerializeField] bool alive;
-    [SerializeField] bool stunned;
+    public bool stunned;
 
     private void Awake()
     {
-        alive = true;
         health = maxHealth;
         stun = 0;
         stunned = false;
@@ -52,5 +51,12 @@ public class EnemyController : MonoBehaviour
         Time.timeScale = 0f;
         yield return new WaitForSecondsRealtime(time);
         Time.timeScale = 1f;
+    }
+
+    void AddDriveForce(float thrustDistance)
+    {
+        Vector3 thrustVector = new Vector3();
+        thrustVector = transform.forward * thrustDistance;
+        rb.AddForce(thrustVector);
     }
 }

@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     public Rigidbody rb;
     public GameObject enemy;
     public PlayerAnimState pas;
+    public FinisherScript fs;
     public Collider hurtbox;
 
     [Header("Input")]
@@ -22,62 +23,76 @@ public class PlayerController : MonoBehaviour
     [SerializeField] bool dodging;
     [SerializeField] bool attacking;
     [SerializeField] bool canAttack;
+    [SerializeField] bool executing;
 
     private void Awake()
     {
         canAttack = true;
         dodging = false;
+        executing = false;
     }
 
     void Update()
     {
-        attacking = pas.attacking;
-        pas.dodging = dodging;
-
-        horizontalInput = Input.GetAxisRaw("JoyHorizontal");
-        verticalInput = Input.GetAxisRaw("JoyVertical");
-        direction = new Vector3(horizontalInput, 0f, verticalInput);
-
-        if (!dodging && !attacking)
+        if (!executing)
         {
-            if (direction.magnitude >= 0.1f)
+            attacking = pas.attacking;
+            pas.dodging = dodging;
+
+            horizontalInput = Input.GetAxisRaw("JoyHorizontal");
+            verticalInput = Input.GetAxisRaw("JoyVertical");
+            direction = new Vector3(horizontalInput, 0f, verticalInput);
+
+            if (!dodging && !attacking)
             {
-                moving = true;
-                rb.velocity = transform.right * horizontalInput * speed; // Handles lateral movement
-                rb.velocity += transform.forward * verticalInput * speed; // Handles vertical movement. = then += to add the velocities: = and = would overwrite the first, += and += would make velocity extremely big
+                if (direction.magnitude >= 0.1f)
+                {
+                    moving = true;
+                    rb.velocity = transform.right * horizontalInput * speed; // Handles lateral movement
+                    rb.velocity += transform.forward * verticalInput * speed; // Handles vertical movement. = then += to add the velocities: = and = would overwrite the first, += and += would make velocity extremely big
+                }
+                else
+                {
+                    moving = false;
+                    rb.velocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
+
+                if (Input.GetButtonDown("Dodge"))
+                {
+                    StartCoroutine(Dodge(direction));
+                }
             }
-            else
+
+
+            transform.LookAt(new Vector3(enemy.transform.position.x, transform.position.y, enemy.transform.position.z));
+
+
+
+            if (Input.GetButtonDown("Light Attack") && !attacking)
             {
-                moving = false;
+                canAttack = false;
                 rb.velocity = Vector3.zero;
+                pas.SendMessage("LightCombo");
             }
 
-            if (Input.GetButtonDown("Dodge"))
+            if (Input.GetButtonDown("Heavy Attack"))
             {
-                StartCoroutine(Dodge(direction));
+                if (enemy.GetComponentInParent<EnemyController>().stunned == true)
+                {
+                    executing = true;
+                    fs.SendMessage("PrepareFinisher");
+                }
+                else if (!attacking)
+                {
+                    canAttack = false;
+                    rb.velocity = Vector3.zero;
+                    pas.SendMessage("HeavyCombo");
+                }
             }
+
+            pas.velMagnitude = direction.magnitude;
         }
-        
-
-        transform.LookAt(new Vector3(enemy.transform.position.x, transform.position.y, enemy.transform.position.z));
-
-        
-
-        if (Input.GetButtonDown("Light Attack") && !attacking)
-        {
-            canAttack = false;
-            rb.velocity = Vector3.zero;
-            pas.SendMessage("LightCombo");
-        }
-
-        if (Input.GetButtonDown("Heavy Attack") && !attacking)
-        {
-            canAttack = false;
-            rb.velocity = Vector3.zero;
-            pas.SendMessage("HeavyCombo");
-        }
-
-        pas.velMagnitude = direction.magnitude;
     }
 
     IEnumerator Dodge(Vector3 direction)
@@ -87,7 +102,10 @@ public class PlayerController : MonoBehaviour
         dodgeVector = transform.right * horizontalInput * dodgeDistance;
         dodgeVector += transform.forward * verticalInput * dodgeDistance;
         rb.AddForce(dodgeVector);
-        yield return new WaitForSeconds(0.8f);
+        hurtbox.enabled = false;
+        yield return new WaitForSeconds(0.3f);
+        hurtbox.enabled = true;
+        yield return new WaitForSeconds(0.5f);
         dodging = false;
     }
 

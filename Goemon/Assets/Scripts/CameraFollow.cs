@@ -6,6 +6,7 @@ public class CameraFollow : MonoBehaviour
 {
     public GameObject player;
     public GameObject enemy;
+    private bool lookAt;
 
     private Vector3 desired;
     private Vector3 smoothed;
@@ -16,6 +17,7 @@ public class CameraFollow : MonoBehaviour
     void Start()
     {
         offset = new Vector3(-2f, 2f, -2f);
+        lookAt = true;
     }
 
     // Update is called once per frame
@@ -24,6 +26,12 @@ public class CameraFollow : MonoBehaviour
         desired = player.transform.position;
         smoothed = Vector3.Lerp(transform.position, desired, smoothSpeed * Time.deltaTime);
         transform.localPosition = smoothed;
-        transform.LookAt(enemy.transform);
+        if (lookAt)
+            transform.LookAt(enemy.transform);
+    }
+
+    void ToggleLookAt()
+    {
+        lookAt = !lookAt;
     }
 }

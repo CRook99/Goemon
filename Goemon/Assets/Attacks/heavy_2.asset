@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: heavy_2
   m_EditorClassIdentifier: 
   damage: 30
-  stun: 15
+  stun: 30
   hitstop: 0.1
   start_time: 1
   active_time: 0.2
